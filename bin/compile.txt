@@ -1,0 +1,2 @@
+javac -encoding utf-8 Stock.java StockDao.java
+java -cp ".;sqlite-jdbc-3.42.0.0.jar" Stock

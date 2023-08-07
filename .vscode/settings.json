@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "git.ignoreLimitWarning": true,
+    "editor.fontFamily": "'Menlo', Consolas, 'Courier New', monospace"
+}
