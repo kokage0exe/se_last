@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.io.*;
+import java.util.*;
 
 public class StockDao {
 	String dbName;
@@ -51,12 +52,12 @@ public class StockDao {
 			
 			while(line != null){
 				String[] day = line.split(", ");
-				PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO DAY (DAY_ID, DAY_TEMPERTURE, DAY_WEATHER) VALUES (?, ?, ?)");
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT OR IGNORE INTO DAY (DAY_ID, DAY_TEMPERTURE, DAY_WEATHER) VALUES (?, ?, ?)");
 				insertStatement.setInt(1, Integer.parseInt(day[0]));
 				insertStatement.setInt(2, Integer.parseInt(day[1]));
 				insertStatement.setString(3, day[2]);
 				insertStatement.executeUpdate();
-				
+
 				line = bf.readLine();
 			}
 			System.out.println("気象データを読み込みました");
@@ -101,7 +102,7 @@ public class StockDao {
 			
 			while(line != null){
 				String[] data = line.split(", ");
-				PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO CONSUMPTION (DAY_ID, STOCK_ID, STOCK_CONSUMPTION, STOCK_LACK) VALUES (?, ?, ?, ?)");
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT OR IGNORE INTO CONSUMPTION (DAY_ID, STOCK_ID, STOCK_CONSUMPTION, STOCK_LACK) VALUES (?, ?, ?, ?)");
 				insertStatement.setInt(1, Integer.parseInt(data[0]));
 				insertStatement.setInt(2, Integer.parseInt(data[1]));
 				insertStatement.setInt(3, Integer.parseInt(data[2]));
@@ -128,6 +129,94 @@ public class StockDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public Double getDayTempX(int day){
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+			
+			String query = "SELECT * FROM DAY WHERE DAY_ID == ?";
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setInt(1, day);
+			ResultSet rs = stmt.executeQuery();
+			
+			int day_id_ = rs.getInt("DAY_ID");
+			int day_temp_ = rs.getInt("DAY_TEMPERTURE");
+			String day_weather_ = rs.getString("DAY_WEATHER");
+			
+			int weather = 0;
+			switch(day_weather_){
+				case "sunny":
+					weather = 0;
+					break;
+				case "cloudy":
+					weather = -5;
+					break;
+				case "rainy":
+					weather = -10;
+					break;
+			}
+
+			closeDB();
+			return (double)(day_temp_ + weather);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			closeDB();
+			return null;
+		}
+	}
+
+	public int getStockId(String stock_name) {
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+			
+			String query = "SELECT * FROM STOCK WHERE STOCK_NAME == ?";
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setString(1, stock_name);
+			ResultSet rs = stmt.executeQuery();
+			
+			int stock_id_ = rs.getInt("STOCK_ID");
+			String stock_name_ = rs.getString("STOCK_NAME");
+
+			closeDB();
+			return stock_id_;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			closeDB();
+			return 0;
+		}
+	}
+
+	public Map<Integer, Integer> getStockConsumptionY(int stock_id) {
+		HashMap<Integer, Integer> map = new HashMap<>();
+
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+			
+			String query = "SELECT * FROM CONSUMPTION WHERE STOCK_ID == ?";
+			PreparedStatement stmt = conn.prepareStatement(query);
+			stmt.setInt(1, stock_id);
+			ResultSet rs = stmt.executeQuery();
+			
+			while(rs.next()){
+				int day_id_ = rs.getInt("DAY_ID");
+				int stock_id_ = rs.getInt("STOCK_ID");
+				int stock_consumption_ = rs.getInt("STOCK_CONSUMPTION");
+				int stock_lack_ = rs.getInt("STOCK_LACK");
+	
+				map.put(day_id_, stock_consumption_ + stock_lack_);
+			}
+
+			closeDB();
+			return map;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			closeDB();
+			return null;
 		}
 	}
 	

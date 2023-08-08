@@ -13,21 +13,29 @@ public class PolynomialRegression {
     }
   }
   
-  public void play(){
-    int degree = 10;
+  public void play(String temperture, String weather){
+    int degree = 8;
     
     PolynomialCurveFitter fitter = PolynomialCurveFitter.create(degree);
     double[] coefficients = fitter.fit(data.toList());
 
     PolynomialFunction regressionFunction = new PolynomialFunction(coefficients);
 
-    double predictedValue = regressionFunction.value(5);
-
-    System.out.println("Regression coefficients:");
-    for (int i = 0; i < coefficients.length; i++) {
-      System.out.println("Coefficient " + i + ": " + coefficients[i]);
+    int weather_to_int = 0;
+    switch(weather){
+      case "sunny":
+        weather_to_int = 0;
+        break;
+      case "cloudy":
+        weather_to_int = -5;
+        break;
+      case "rainy":
+        weather_to_int = -10;
+        break;
     }
-    System.out.println("Predicted value at x = 5: " + predictedValue);
-    
+
+    double predictedValue = regressionFunction.value(Integer.parseInt(temperture) + weather_to_int);
+
+    System.out.println(String.format("%s℃で予想される在庫消費数: " + predictedValue, temperture));
   }
 }
