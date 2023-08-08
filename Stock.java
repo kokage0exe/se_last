@@ -10,7 +10,7 @@ public class Stock {
     String day = sdf.format(cal.getTime());
 
     try {
-      sd.importWeatherForecast(String.format("./input/weather_%s.csv", day));
+      sd.importWeatherForecast(String.format("./input/weather.csv", day));
       sd.createStock("apple");
       sd.createStock("banana");
       sd.importConsumption(String.format("./input/consumption_%s.csv", day));

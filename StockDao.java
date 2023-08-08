@@ -49,13 +49,16 @@ public class StockDao {
 			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
 			String line = bf.readLine();
 			
-			String[] day = line.split(", ");
-			PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO DAY (DAY_ID, DAY_TEMPERTURE, DAY_WEATHER) VALUES (?, ?, ?)");
-			insertStatement.setInt(1, Integer.parseInt(day[0]));
-			insertStatement.setInt(2, Integer.parseInt(day[1]));
-			insertStatement.setString(2, day[2]);
-			insertStatement.executeUpdate();
-			
+			while(line != null){
+				String[] day = line.split(", ");
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO DAY (DAY_ID, DAY_TEMPERTURE, DAY_WEATHER) VALUES (?, ?, ?)");
+				insertStatement.setInt(1, Integer.parseInt(day[0]));
+				insertStatement.setInt(2, Integer.parseInt(day[1]));
+				insertStatement.setString(3, day[2]);
+				insertStatement.executeUpdate();
+				
+				line = bf.readLine();
+			}
 			System.out.println("気象データを読み込みました");
 		} catch (FileNotFoundException e) {
 			System.out.println("気象データファイルを読み込めませんでした");
