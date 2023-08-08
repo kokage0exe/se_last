@@ -14,7 +14,7 @@ public class PolynomialRegression {
   }
   
   public void play(String temperture, String weather){
-    int degree = 8;
+    int degree = 4;
     
     PolynomialCurveFitter fitter = PolynomialCurveFitter.create(degree);
     double[] coefficients = fitter.fit(data.toList());

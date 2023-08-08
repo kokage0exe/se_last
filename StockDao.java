@@ -141,7 +141,6 @@ public class StockDao {
 			stmt.setInt(1, day);
 			ResultSet rs = stmt.executeQuery();
 			
-			int day_id_ = rs.getInt("DAY_ID");
 			int day_temp_ = rs.getInt("DAY_TEMPERTURE");
 			String day_weather_ = rs.getString("DAY_WEATHER");
 			
@@ -178,7 +177,6 @@ public class StockDao {
 			ResultSet rs = stmt.executeQuery();
 			
 			int stock_id_ = rs.getInt("STOCK_ID");
-			String stock_name_ = rs.getString("STOCK_NAME");
 
 			closeDB();
 			return stock_id_;
@@ -203,7 +201,6 @@ public class StockDao {
 			
 			while(rs.next()){
 				int day_id_ = rs.getInt("DAY_ID");
-				int stock_id_ = rs.getInt("STOCK_ID");
 				int stock_consumption_ = rs.getInt("STOCK_CONSUMPTION");
 				int stock_lack_ = rs.getInt("STOCK_LACK");
 	
