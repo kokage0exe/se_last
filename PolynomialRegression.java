@@ -14,17 +14,13 @@ public class PolynomialRegression {
   }
   
   public void play(){
-    // 多項式回帰の次数を指定
     int degree = 10;
     
-    // 多項式回帰の実行
     PolynomialCurveFitter fitter = PolynomialCurveFitter.create(degree);
     double[] coefficients = fitter.fit(data.toList());
 
-    // 回帰多項式を作成
     PolynomialFunction regressionFunction = new PolynomialFunction(coefficients);
 
-    // x = 5 のときの予測値を計算
     double predictedValue = regressionFunction.value(5);
 
     System.out.println("Regression coefficients:");
