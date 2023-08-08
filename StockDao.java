@@ -3,9 +3,6 @@ import java.io.*;
 
 public class StockDao {
 	String dbName;
-	private static final String dayTableName = "DAY";
-	private static final String stockTableName = "STOCK";
-	private static final String consumptionTableName = "CONSUMPTION";
 	Connection conn = null;
 	Statement stmt = null;
 	
@@ -37,11 +34,11 @@ public class StockDao {
 		try {
 			stmt = conn.createStatement();
 
-			stmt.executeUpdate(String.format("CREATE TABLE IF NOT EXISTS %s (DAY_ID INTEGER PRIMARY KEY, DAY_TEMPERTURE INTEGER, DAY_WEATHER STRING)", dayTableName));
+			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS DAY (DAY_ID INTEGER PRIMARY KEY, DAY_TEMPERTURE INTEGER, DAY_WEATHER TEXT)");
 
-			stmt.executeUpdate(String.format("CREATE TABLE IF NOT EXISTS %s (STOCK_ID INTEGER PRIMARY KEY, STOCK_NAME STRING)", stockTableName));
+			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS STOCK (STOCK_ID INTEGER PRIMARY KEY, STOCK_NAME TEXT)");
 
-			stmt.executeUpdate(String.format("CREATE TABLE IF NOT EXISTS %s (DAY_ID INTEGER, STOCK_ID INTEGER, STOCK_CONSUMPTION INTEGER, STOCK_LACK INTEGER)", consumptionTableName));
+			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS CONSUMPTION (DAY_ID INTEGER, STOCK_ID INTEGER, STOCK_CONSUMPTION INTEGER, STOCK_LACK INTEGER)");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -49,14 +46,16 @@ public class StockDao {
 
 	public void importWeatherForecast(String filePath) {
 		try {
-			Statement stmt = conn.createStatement();
 			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
 			String line = bf.readLine();
 			
-			while(line != null){
-				String[] day = line.split(" ");
-				stmt.executeUpdate(String.format("INSERT INTO DAY VALUES(%d, %d, %s)", Integer.parseInt(day[0]), Integer.parseInt(day[1]), day[2]));
-			}
+			String[] day = line.split(", ");
+			PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO DAY (DAY_ID, DAY_TEMPERTURE, DAY_WEATHER) VALUES (?, ?, ?)");
+			insertStatement.setInt(1, Integer.parseInt(day[0]));
+			insertStatement.setInt(2, Integer.parseInt(day[1]));
+			insertStatement.setString(2, day[2]);
+			insertStatement.executeUpdate();
+			
 			System.out.println("気象データを読み込みました");
 		} catch (FileNotFoundException e) {
 			System.out.println("気象データファイルを読み込めませんでした");
@@ -66,23 +65,27 @@ public class StockDao {
 	}
 	
 	public void createStock(String stockName) {
-		int stockId = 0;
-		try{
-			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(String.format("SELECT COUNT(*) AS count FROM STOCK WHERE STOCK_NAME = '%s'", stockName));
-			rs = stmt.executeQuery("SELECT max(rowid) FROM STOCK");
+		try {
+			PreparedStatement checkStatement = conn.prepareStatement("SELECT STOCK_NAME FROM STOCK WHERE STOCK_NAME = ?");
+			checkStatement.setString(1, stockName);
+			ResultSet rs = checkStatement.executeQuery();
 			
 			if (rs.next()) {
-				int count = rs.getInt("count");
-				if (count > 0) {
-					System.out.println("その商品名は既に使われています");
+				System.out.println("その商品名は既に使われています");
+			} else {
+				PreparedStatement maxIdStatement = conn.prepareStatement("SELECT MAX(STOCK_ID) FROM STOCK");
+				ResultSet maxIdRs = maxIdStatement.executeQuery();
+				
+				int stockId = 1;
+				if (maxIdRs.next()) {
+						stockId = maxIdRs.getInt(1) + 1;
 				}
+
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO STOCK (STOCK_ID, STOCK_NAME) VALUES (?, ?)");
+				insertStatement.setInt(1, stockId);
+				insertStatement.setString(2, stockName);
+				insertStatement.executeUpdate();
 			}
-			
-			while (rs.next()) {
-				stockId = rs.getInt(1) + 1;
-			}
-			stmt.executeUpdate(String.format("INSERT INTO STOCK VALUES(%d, '%s')", stockId, stockName));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -90,13 +93,19 @@ public class StockDao {
 
 	public void importConsumption(String filePath) {
 		try {
-			Statement stmt = conn.createStatement();
 			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
 			String line = bf.readLine();
 			
 			while(line != null){
-				String[] data = line.split(" ");
-				stmt.executeUpdate(String.format("INSERT INTO CONSUMPTION VALUES(%d, %d, %s)", Integer.parseInt(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3])));
+				String[] data = line.split(", ");
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO CONSUMPTION (DAY_ID, STOCK_ID, STOCK_CONSUMPTION, STOCK_LACK) VALUES (?, ?, ?, ?)");
+				insertStatement.setInt(1, Integer.parseInt(data[0]));
+				insertStatement.setInt(2, Integer.parseInt(data[1]));
+				insertStatement.setInt(3, Integer.parseInt(data[2]));
+				insertStatement.setInt(4, Integer.parseInt(data[3]));
+				insertStatement.executeUpdate();
+				
+				line = bf.readLine();
 			}
 			System.out.println("在庫データを読み込みました");
 		} catch (FileNotFoundException e) {
