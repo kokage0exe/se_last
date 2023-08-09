@@ -22,18 +22,18 @@ public class Stock {
 
     System.out.println("管理したい在庫名を入力: ");
     String stock_name = sc.nextLine();
-    int stock_id = sd.getStockId(stock_name);
-    if (stock_id != 0) {
-      Map<Integer, Integer> map = sd.getStockConsumptionY(stock_id);
+    int stockId = sd.getStockId(stock_name);
+    if (stockId != 0) {
+      Map<Integer, Integer> map = sd.getStockConsumptionY(stockId);
 
-      List<Double> x_temperture = new ArrayList<>();
-      List<Double> y_consumption = new ArrayList<>();
+      List<Double> tempertureX = new ArrayList<>();
+      List<Double> consumptionY = new ArrayList<>();
 
       for (int key : map.keySet()) {
-        x_temperture.add(sd.getDayTempX(key));
-        y_consumption.add((double) map.get(key));
+        tempertureX.add(sd.getDayTempX(key));
+        consumptionY.add((double) map.get(key));
       }
-      PolynomialRegression pr = new PolynomialRegression(x_temperture, y_consumption);
+      PolynomialRegression pr = new PolynomialRegression(tempertureX, consumptionY);
 
       System.out.println("明日の予想最高気温を入力: ");
       String temperture = sc.nextLine();
