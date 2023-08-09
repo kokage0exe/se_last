@@ -174,24 +174,24 @@ public class StockDao {
 			stmt.setInt(1, day);
 			ResultSet rs = stmt.executeQuery();
 
-			int day_temp_ = rs.getInt("DAY_TEMPERTURE");
-			String day_weather_ = rs.getString("DAY_WEATHER");
+			int dayTemp = rs.getInt("DAY_TEMPERTURE");
+			String dayWeatherStr = rs.getString("DAY_WEATHER");
 
-			int weather = 0;
-			switch (day_weather_) {
+			int weatherInt = 0;
+			switch (dayWeatherStr) {
 				case "sunny":
-					weather = 0;
+					weatherInt = 0;
 					break;
 				case "cloudy":
-					weather = -5;
+					weatherInt = -5;
 					break;
 				case "rainy":
-					weather = -10;
+					weatherInt = -10;
 					break;
 			}
 
 			closeDB();
-			return (double) (day_temp_ + weather);
+			return (double) (dayTemp + weatherInt);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -200,19 +200,19 @@ public class StockDao {
 		}
 	}
 
-	public int getStockId(String stock_name) {
+	public int getStockId(String stockName) {
 		try {
 			conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
 
 			String query = "SELECT * FROM STOCK WHERE STOCK_NAME == ?";
 			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, stock_name);
+			stmt.setString(1, stockName);
 			ResultSet rs = stmt.executeQuery();
 
-			int stock_id_ = rs.getInt("STOCK_ID");
+			int stockId = rs.getInt("STOCK_ID");
 
 			closeDB();
-			return stock_id_;
+			return stockId;
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -221,7 +221,7 @@ public class StockDao {
 		}
 	}
 
-	public Map<Integer, Integer> getStockConsumptionY(int stock_id) {
+	public Map<Integer, Integer> getStockConsumptionY(int stockId) {
 		HashMap<Integer, Integer> map = new HashMap<>();
 
 		try {
@@ -229,15 +229,15 @@ public class StockDao {
 
 			String query = "SELECT * FROM CONSUMPTION WHERE STOCK_ID == ?";
 			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setInt(1, stock_id);
+			stmt.setInt(1, stockId);
 			ResultSet rs = stmt.executeQuery();
 
 			while (rs.next()) {
-				int day_id_ = rs.getInt("DAY_ID");
-				int stock_consumption_ = rs.getInt("STOCK_CONSUMPTION");
-				int stock_lack_ = rs.getInt("STOCK_LACK");
+				int dayId = rs.getInt("DAY_ID");
+				int stockConsumption = rs.getInt("STOCK_CONSUMPTION");
+				int stockLack = rs.getInt("STOCK_LACK");
 
-				map.put(day_id_, stock_consumption_ + stock_lack_);
+				map.put(dayId, stockConsumption + stockLack);
 			}
 
 			closeDB();

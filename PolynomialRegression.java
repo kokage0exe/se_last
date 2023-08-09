@@ -21,20 +21,20 @@ public class PolynomialRegression {
 
     PolynomialFunction regressionFunction = new PolynomialFunction(coefficients);
 
-    int weather_to_int = 0;
+    int weatherInt = 0;
     switch (weather) {
       case "sunny":
-        weather_to_int = 0;
+        weatherInt = 0;
         break;
       case "cloudy":
-        weather_to_int = -5;
+        weatherInt = -5;
         break;
       case "rainy":
-        weather_to_int = -10;
+        weatherInt = -10;
         break;
     }
 
-    double predictedValue = regressionFunction.value(Integer.parseInt(temperture) + weather_to_int);
+    double predictedValue = regressionFunction.value(Integer.parseInt(temperture) + weatherInt);
 
     System.out.println(String.format("%s℃(%s)で予想される在庫消費数: " + predictedValue, temperture, weather));
   }
