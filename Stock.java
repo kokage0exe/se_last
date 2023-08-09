@@ -11,10 +11,9 @@ public class Stock {
     String day = sdf.format(cal.getTime());
 
     try {
-      sd.importWeatherForecast(String.format("./input/weather.csv", day));
-      sd.createStock("apple");
-      sd.createStock("banana");
-      for(int i = Integer.parseInt(day) - 1; i > 20230801; i--){
+      sd.importWeatherForecast("./input/weather.csv");
+      sd.importStockName("./input/stock_name.csv");
+      for(int i = Integer.parseInt(day); i >= 20230801; i--){
         sd.importConsumption(String.format("./input/consumption_%d.csv", i));
       }
     } catch (Exception e) {

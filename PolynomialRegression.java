@@ -36,6 +36,6 @@ public class PolynomialRegression {
 
     double predictedValue = regressionFunction.value(Integer.parseInt(temperture) + weather_to_int);
 
-    System.out.println(String.format("%s℃で予想される在庫消費数: " + predictedValue, temperture));
+    System.out.println(String.format("%s℃(%s)で予想される在庫消費数: " + predictedValue, temperture, weather));
   }
 }

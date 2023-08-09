@@ -7,7 +7,7 @@ public class StockDao {
 	Connection conn = null;
 	Statement stmt = null;
 	
-	public StockDao(String dbName) {
+	private StockDao(String dbName) {
 		this.dbName = dbName;
 		connectionDatabase();
 		createTable();
@@ -19,7 +19,7 @@ public class StockDao {
 		return manager;
 	}
 
-	public void connectionDatabase() {
+	private void connectionDatabase() {
 		try {
 			Class.forName("org.sqlite.JDBC");
 			conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
@@ -31,13 +31,13 @@ public class StockDao {
 		}
 	}
 
-	public void createTable() {
+	private void createTable() {
 		try {
 			stmt = conn.createStatement();
 
 			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS DAY (DAY_ID INTEGER PRIMARY KEY, DAY_TEMPERTURE INTEGER, DAY_WEATHER TEXT)");
 
-			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS STOCK (STOCK_ID INTEGER PRIMARY KEY, STOCK_NAME TEXT)");
+			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS STOCK (STOCK_ID INTEGER PRIMARY KEY, STOCK_NAME TEXT UNIQUE)");
 
 			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS CONSUMPTION (DAY_ID INTEGER, STOCK_ID INTEGER, STOCK_CONSUMPTION INTEGER, STOCK_LACK INTEGER)");
 		} catch(Exception e) {
@@ -68,6 +68,52 @@ public class StockDao {
 		}
 	}
 	
+	public void importStockName(String filePath) {
+		try {
+			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
+			String line = bf.readLine();
+			
+			while(line != null){
+				String[] day = line.split(", ");
+				PreparedStatement insertStatement = conn.prepareStatement("INSERT OR IGNORE INTO STOCK (STOCK_ID, STOCK_NAME) VALUES (?, ?)");
+				insertStatement.setInt(1, Integer.parseInt(day[0]));
+				insertStatement.setString(2, day[1]);
+				insertStatement.executeUpdate();
+
+				line = bf.readLine();
+			}
+			System.out.println("商品データを読み込みました");
+		} catch (FileNotFoundException e) {
+			System.out.println("商品データファイルを読み込めませんでした");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void importConsumption(String filePath) {
+		try {
+			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
+			String line = bf.readLine();
+			
+			while(line != null){
+				String[] data = line.split(", ");
+				PreparedStatement insertStatement = conn.prepareStatement("REPLACE INTO CONSUMPTION (DAY_ID, STOCK_ID, STOCK_CONSUMPTION, STOCK_LACK) VALUES (?, ?, ?, ?)");
+				insertStatement.setInt(1, Integer.parseInt(data[0]));
+				insertStatement.setInt(2, Integer.parseInt(data[1]));
+				insertStatement.setInt(3, Integer.parseInt(data[2]));
+				insertStatement.setInt(4, Integer.parseInt(data[3]));
+				insertStatement.executeUpdate();
+				
+				line = bf.readLine();
+			}
+			System.out.println("在庫データを読み込みました");
+		} catch (FileNotFoundException e) {
+			System.out.println("在庫データファイルを読み込めませんでした");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void createStock(String stockName) {
 		try {
 			PreparedStatement checkStatement = conn.prepareStatement("SELECT STOCK_NAME FROM STOCK WHERE STOCK_NAME = ?");
@@ -90,30 +136,6 @@ public class StockDao {
 				insertStatement.setString(2, stockName);
 				insertStatement.executeUpdate();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void importConsumption(String filePath) {
-		try {
-			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), "UTF-8"));
-			String line = bf.readLine();
-			
-			while(line != null){
-				String[] data = line.split(", ");
-				PreparedStatement insertStatement = conn.prepareStatement("INSERT OR IGNORE INTO CONSUMPTION (DAY_ID, STOCK_ID, STOCK_CONSUMPTION, STOCK_LACK) VALUES (?, ?, ?, ?)");
-				insertStatement.setInt(1, Integer.parseInt(data[0]));
-				insertStatement.setInt(2, Integer.parseInt(data[1]));
-				insertStatement.setInt(3, Integer.parseInt(data[2]));
-				insertStatement.setInt(4, Integer.parseInt(data[3]));
-				insertStatement.executeUpdate();
-				
-				line = bf.readLine();
-			}
-			System.out.println("在庫データを読み込みました");
-		} catch (FileNotFoundException e) {
-			System.out.println("在庫データファイルを読み込めませんでした");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
